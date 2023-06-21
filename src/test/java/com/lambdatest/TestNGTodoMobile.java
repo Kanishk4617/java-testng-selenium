@@ -5,7 +5,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.Assert;
@@ -21,8 +20,24 @@ public class TestNGTodoMobile {
 
     @BeforeMethod
     public void setup(Method m, ITestContext ctx) throws MalformedURLException {
-        System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/chromedriver");
-        driver = new ChromeDriver();
+        String username = System.getenv("LT_USERNAME") == null ? "Your LT Username" : System.getenv("LT_USERNAME");
+        String authkey = System.getenv("LT_ACCESS_KEY") == null ? "Your LT AccessKey" : System.getenv("LT_ACCESS_KEY");
+        ;
+        String hub = "@mobile-hub.lambdatest.com/wd/hub";
+
+        DesiredCapabilities caps = new DesiredCapabilities();
+        caps.setCapability("platformName", "android");
+        caps.setCapability("deviceName", "Pixel 4a");
+        caps.setCapability("platformVersion", "11");
+        caps.setCapability("isRealMobile", true);
+        caps.setCapability("build", "TestNG With Java");
+        caps.setCapability("name", m.getName() + this.getClass().getName());
+        caps.setCapability("plugin", "git-testng");
+
+        String[] Tags = new String[] { "Feature", "Tag", "Moderate" };
+        caps.setCapability("tags", Tags);
+
+        driver = new RemoteWebDriver(new URL("https://" + username + ":" + authkey + hub), caps);
     }
 
     @Test
@@ -86,6 +101,7 @@ public class TestNGTodoMobile {
 
     @AfterMethod
     public void tearDown() {
+        driver.executeScript("lambda-status=" + Status);
         driver.quit();
     }
 
